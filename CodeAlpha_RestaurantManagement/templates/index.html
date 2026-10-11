@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Management System</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f8f9fa; color: #333; }
+        header { background: linear-gradient(135deg, #0d1b2a, #1b2838); color: white; padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+        header h1 { font-size: 20px; }
+        header nav { display: flex; gap: 6px; flex-wrap: wrap; }
+        header nav button { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.15); color: #ccc; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+        header nav button.active { background: #e94560; border-color: #e94560; color: white; }
+        header nav button:hover { background: rgba(255,255,255,0.2); }
+        .container { max-width: 1100px; margin: 20px auto; padding: 0 16px; }
+        .card { background: white; border-radius: 10px; box-shadow: 0 1px 6px rgba(0,0,0,0.07); padding: 20px; margin-bottom: 16px; }
+        .card h3 { font-size: 15px; margin-bottom: 12px; color: #0d1b2a; }
+        .form-row { display: flex; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; align-items: center; }
+        .form-row label { font-size: 13px; color: #666; min-width: 100px; }
+        .form-row input, .form-row textarea, .form-row select { flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; }
+        textarea { resize: vertical; min-height: 60px; }
+        button.btn { padding: 8px 18px; background: #e94560; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; transition: background 0.2s; }
+        button.btn:hover { background: #d63851; }
+        button.btn.secondary { background: #6c757d; }
+        button.btn.secondary:hover { background: #5a6268; }
+        button.btn.success { background: #2ecc71; }
+        button.btn.success:hover { background: #27ae60; }
+        button.btn.warning { background: #f39c12; color: white; }
+        button.btn.warning:hover { background: #d68910; }
+        button.btn.danger { background: #e74c3c; }
+        button.btn.danger:hover { background: #c0392b; }
+        button.btn:disabled { background: #aaa; cursor: not-allowed; }
+        .alert { padding: 10px 14px; border-radius: 6px; margin-bottom: 10px; font-size: 13px; }
+        .alert.error { background: #fde8e8; color: #c0392b; }
+        .alert.success { background: #d4edda; color: #155724; }
+        .alert.info { background: #d1ecf1; color: #0c5460; }
+        .alert.warning { background: #fff3cd; color: #856404; }
+        .empty { text-align: center; padding: 40px; color: #999; font-size: 14px; }
+        .section-tabs { display: flex; gap: 16px; border-bottom: 2px solid #e9ecef; padding-bottom: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+        .section-tab { background: none; border: none; padding: 6px 0; font-size: 14px; color: #999; cursor: pointer; border-bottom: 2px solid transparent; padding-bottom: 4px; }
+        .section-tab.active { color: #e94560; border-bottom-color: #e94560; font-weight: 600; }
+        /* Menu grid */
+        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+        .menu-item { border: 1px solid #e8e8e8; border-radius: 8px; padding: 14px; background: white; }
+        .menu-item .cat { font-size: 11px; color: #e94560; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+        .menu-item h4 { font-size: 14px; margin: 4px 0; }
+        .menu-item .price { color: #2ecc71; font-weight: 700; font-size: 15px; }
+        .menu-item .desc { font-size: 12px; color: #999; margin-top: 4px; }
+        .menu-item .actions { margin-top: 8px; display: flex; gap: 6px; }
+        .menu-item input[type="number"] { width: 50px; padding: 4px 6px; border: 1px solid #ddd; border-radius: 4px; text-align: center; }
+        /* Tables */
+        .table-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+        .table-card { border: 1px solid #e8e8e8; border-radius: 8px; padding: 14px; text-align: center; background: white; }
+        .table-card .number { font-size: 24px; font-weight: 700; color: #0d1b2a; }
+        .table-card .capacity { font-size: 12px; color: #999; }
+        .table-card .status { font-size: 11px; padding: 2px 8px; border-radius: 10px; display: inline-block; margin-top: 4px; font-weight: 600; }
+        .status-available { background: #d4edda; color: #155724; }
+        .status-occupied { background: #fde8e8; color: #c0392b; }
+        .status-reserved { background: #fff3cd; color: #856404; }
+        .status-maintenance { background: #e2e3e5; color: #383d41; }
+        /* Orders */
+        .order-item { border: 1px solid #e8e8e8; border-radius: 8px; padding: 14px; margin-bottom: 10px; background: white; }
+        .order-item .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .order-item .header .info { font-weight: 600; }
+        .order-item .header .total { font-size: 18px; font-weight: 700; color: #e94560; }
+        .order-item .items-list { font-size: 13px; color: #666; }
+        .order-item .items-list div { padding: 2px 0; }
+        .order-item .actions { margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; }
+        /* Reservations */
+        .res-item { border: 1px solid #e8e8e8; border-radius: 8px; padding: 12px 14px; margin-bottom: 8px; background: white; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+        .res-item .info { font-size: 13px; }
+        .res-item .info strong { color: #0d1b2a; }
+        .res-item .time { color: #e94560; font-weight: 600; }
+        /* Inventory */
+        .inv-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .inv-table th { text-align: left; padding: 8px 10px; background: #f8f9fa; border-bottom: 2px solid #e9ecef; color: #666; font-weight: 600; }
+        .inv-table td { padding: 8px 10px; border-bottom: 1px solid #f0f0f0; }
+        .inv-table .low { color: #e94560; font-weight: 600; }
+        .inv-table .ok { color: #2ecc71; }
+        .inv-table .actions { display: flex; gap: 6px; }
+        .inv-table input[type="number"] { width: 60px; padding: 4px 6px; border: 1px solid #ddd; border-radius: 4px; text-align: center; }
+        /* Dashboard stats */
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; margin-bottom: 16px; }
+        .stat-box { background: white; border-radius: 8px; padding: 16px; text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,0.06); border-left: 3px solid #e94560; }
+        .stat-box .number { font-size: 26px; font-weight: 700; color: #0d1b2a; }
+        .stat-box .label { font-size: 12px; color: #999; margin-top: 2px; }
+        .stat-box.warn { border-left-color: #f39c12; }
+        .stat-box.good { border-left-color: #2ecc71; }
+        /* Order form in modal-like card */
+        .order-summary { background: #f8f9fa; border-radius: 8px; padding: 12px; margin: 10px 0; }
+        .order-summary .row { display: flex; justify-content: space-between; font-size: 13px; padding: 2px 0; }
+        .order-summary .total-row { font-weight: 700; font-size: 15px; border-top: 1px solid #ddd; margin-top: 4px; padding-top: 6px; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🍽️ Restaurant Management System</h1>
+        <nav>
+            <button class="active" onclick="switchTab('menu', this)">Menu</button>
+            <button onclick="switchTab('orders', this)">Orders</button>
+            <button onclick="switchTab('tables', this)">Tables</button>
+            <button onclick="switchTab('reservations', this)">Reservations</button>
+            <button onclick="switchTab('inventory', this)">Inventory</button>
+            <button onclick="switchTab('dashboard', this)">Dashboard</button>
+        </nav>
+    </header>
+    <div class="container">
+        <!-- MENU -->
+        <div id="tab-menu">
+            <div class="card">
+                <h3 style="display:flex;justify-content:space-between;">Menu Items <span id="menuCount" style="font-size:13px;color:#999;font-weight:normal;"></span></h3>
+                <div class="menu-grid" id="menuGrid"></div>
+            </div>
+            <div class="card">
+                <h3>Add to Order</h3>
+                <div id="orderPanel">
+                    <p style="color:#999;font-size:13px;">Select items from the menu above and click "Add to Order".</p>
+                </div>
+                <div id="orderForm" style="display:none;">
+                    <div class="form-row"><label>Customer</label><input id="orderCustomer" placeholder="Customer name" /></div>
+                    <div class="form-row"><label>Table</label>
+                        <select id="orderTable"><option value="">No table</option></select>
+                    </div>
+                    <div class="form-row"><label>Notes</label><input id="orderNotes" placeholder="Special requests..." /></div>
+                    <div class="order-summary" id="orderSummary"></div>
+                    <button class="btn" onclick="placeOrder()">Place Order</button>
+                    <button class="btn secondary" onclick="clearOrder()">Clear</button>
+                </div>
+                <div id="orderAlert"></div>
+            </div>
+        </div>
+        <!-- ORDERS -->
+        <div id="tab-orders" style="display:none;">
+            <div class="card">
+                <h3>All Orders <span id="orderCount" style="font-size:13px;color:#999;font-weight:normal;"></span></h3>
+                <div class="form-row" style="margin-bottom:12px;">
+                    <select id="orderFilter" style="flex:1;" onchange="loadOrders()">
+                        <option value="">All Statuses</option>
+                        <option value="pending">Pending</option>
+                        <option value="preparing">Preparing</option>
+                        <option value="ready">Ready</option>
+                        <option value="served">Served</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                    <button class="btn secondary" onclick="loadOrders()">Filter</button>
+                </div>
+                <div id="ordersList"></div>
+            </div>
+        </div>
+        <!-- TABLES -->
+        <div id="tab-tables" style="display:none;">
+            <div class="card">
+                <h3>Table Management <span id="tableCount" style="font-size:13px;color:#999;font-weight:normal;"></span></h3>
+                <div class="form-row" style="margin-bottom:12px;">
+                    <select id="tableFilter" style="flex:1;" onchange="loadTables()">
+                        <option value="">All Statuses</option>
+                        <option value="available">Available</option>
+                        <option value="occupied">Occupied</option>
+                        <option value="reserved">Reserved</option>
+                        <option value="maintenance">Maintenance</option>
+                    </select>
+                    <button class="btn secondary" onclick="loadTables()">Filter</button>
+                </div>
+                <div class="table-grid" id="tablesGrid"></div>
+            </div>
+        </div>
+        <!-- RESERVATIONS -->
+        <div id="tab-reservations" style="display:none;">
+            <div class="card">
+                <h3>Reservations <span id="resCount" style="font-size:13px;color:#999;font-weight:normal;"></span></h3>
+                <div class="form-row" style="margin-bottom:12px;">
+                    <label>Date</label><input id="resDate" type="date" onchange="loadReservations()" />
+                    <select id="resFilter" style="flex:1;" onchange="loadReservations()">
+                        <option value="">All Statuses</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="seated">Seated</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                        <option value="no-show">No-show</option>
+                    </select>
+                    <button class="btn secondary" onclick="loadReservations()">Filter</button>
+                </div>
+                <div id="reservationsList"></div>
+            </div>
+            <div class="card">
+                <h3>New Reservation</h3>
+                <div class="form-row"><label>Name *</label><input id="resName" placeholder="Customer name" /></div>
+                <div class="form-row"><label>Phone</label><input id="resPhone" placeholder="555-0000" /></div>
+                <div class="form-row"><label>Email</label><input id="resEmail" type="email" placeholder="email@example.com" /></div>
+                <div class="form-row"><label>Date *</label><input id="resDateNew" type="date" /></div>
+                <div class="form-row"><label>Time *</label><input id="resTime" type="time" /></div>
+                <div class="form-row"><label>Party Size *</label><input id="resParty" type="number" min="1" value="2" /></div>
+                <div class="form-row"><label>Table</label>
+                    <select id="resTableSelect"><option value="">Auto-assign</option></select>
+                </div>
+                <div class="form-row"><label>Notes</label><input id="resNotes" placeholder="Special requests..." /></div>
+                <div id="resAlert"></div>
+                <button class="btn" onclick="makeReservation()">Create Reservation</button>
+            </div>
+        </div>
+        <!-- INVENTORY -->
+        <div id="tab-inventory" style="display:none;">
+            <div class="card">
+                <h3 style="display:flex;justify-content:space-between;">Inventory <button class="btn secondary" style="padding:4px 10px;font-size:12px;" onclick="loadInventory()">Refresh</button></h3>
+                <div class="form-row" style="margin-bottom:12px;">
+                    <button class="btn warning" onclick="showLowStockOnly()" id="lowStockBtn">Show Low Stock Only</button>
+                    <button class="btn secondary" onclick="showInventoryAll()">Show All</button>
+                </div>
+                <table class="inv-table">
+                    <thead><tr><th>Item</th><th>Current Qty</th><th>Unit</th><th>Alert Level</th><th>Status</th><th>Actions</th></tr></thead>
+                    <tbody id="inventoryBody"></tbody>
+                </table>
+            </div>
+        </div>
+        <!-- DASHBOARD -->
+        <div id="tab-dashboard" style="display:none;">
+            <div class="card">
+                <h3>Daily Dashboard</h3>
+                <div class="stat-grid" id="statGrid"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // ── State ──
+        let currentOrder = [];
+
+        // ── Tab switching ──
+        function switchTab(name, btn) {
+            document.querySelectorAll('header nav button').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            ['menu','orders','tables','reservations','inventory','dashboard'].forEach(t => {
+                document.getElementById('tab-'+t).style.display = 'none';
+            });
+            document.getElementById('tab-'+name).style.display = 'block';
+            if (name === 'menu') { loadMenu(); loadTablesForOrder(); }
+            if (name === 'orders') loadOrders();
+            if (name === 'tables') loadTables();
+            if (name === 'reservations') loadReservations();
+            if (name === 'inventory') loadInventory();
+            if (name === 'dashboard') loadDashboard();
+        }
+
+        // ── Helpers ──
+        function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+        function showAlert(id, msg, type) {
+            const el = document.getElementById(id);
+            el.innerHTML = `<div class="alert ${type}">${esc(msg)}</div>`;
+            setTimeout(() => { if (el.firstChild) el.innerHTML = ''; }, 4000);
+        }
+
+        // ── Menu ──
+        function loadMenu() {
+            Promise.all([
+                fetch('/api/menu').then(r => r.json()),
+                fetch('/api/menu/categories').then(r => r.json())
+            ]).then(([items, cats]) => {
+                document.getElementById('menuCount').textContent = items.length + ' items';
+                if (items.length === 0) {
+                    document.getElementById('menuGrid').innerHTML = '<div class="empty">No menu items.</div>';
+                    return;
+                }
+                const catsHtml = cats.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+                // Group by category
+                const grouped = {};
+                items.forEach(item => {
+                    if (!grouped[item.category]) grouped[item.category] = [];
+                    grouped[item.category].push(item);
+                });
+                let html = '';
+                Object.entries(grouped).forEach(([cat, catItems]) => {
+                    html += `<h4 style="font-size:12px;color:#999;text-transform:uppercase;letter-spacing:0.5px;margin:12px 0 6px 0;">${esc(cat)} (${catItems.length})</h4>`;
+                    html += '<div class="menu-grid">';
+                    catItems.forEach(item => {
+                        html += `
+                            <div class="menu-item">
+                                <div class="cat">${esc(item.category)}</div>
+                                <h4>${esc(item.name)}</h4>
+                                <div class="price">$${item.price.toFixed(2)}</div>
+                                <div class="desc">${esc(item.description || '')}</div>
+                                <div class="actions">
+                                    <input type="number" id="qty_${item.id}" value="1" min="1" max="99" />
+                                    <button class="btn" style="padding:4px 12px;font-size:12px;" onclick="addToOrder(${item.id})" ${item.available ? '' : 'disabled'}>
+                                        ${item.available ? 'Add' : 'Unavailable'}
+                                    </button>
+                                </div>
+                            </div>`;
+                    });
+                    html += '</div>';
+                });
+                document.getElementById('menuGrid').innerHTML = html;
+                document.getElementById('orderPanel').style.display = 'none';
+            });
+        }
+
+        function addToOrder(menuId) {
+            const qtyInput = document.getElementById('qty_' + menuId);
+            const qty = parseInt(qtyInput.value) || 1;
+            fetch('/api/menu').then(r => r.json()).then(items => {
+                const menuItem = items.find(i => i.id === menuId);
+                if (!menuItem) return;
+                // Check if already in order
+                const existing = currentOrder.find(o => o.id === menuId);
+                if (existing) {
+                    existing.quantity += qty;
+                } else {
+                    currentOrder.push({ id: menuId, name: menuItem.name, price: menuItem.price, quantity: qty, notes: '' });
+                }
+                updateOrderSummary();
+            });
+        }
+
+        function removeFromOrder(menuId) {
+            currentOrder = currentOrder.filter(o => o.id !== menuId);
+            updateOrderSummary();
+        }
+
+        function updateOrderSummary() {
+            const panel = document.getElementById('orderForm');
+            const summary = document.getElementById('orderSummary');
+            const noteInput = document.getElementById('orderNotes');
+            if (currentOrder.length === 0) {
+                panel.style.display = 'none';
+                document.getElementById('orderPanel').style.display = 'block';
+                return;
+            }
+            panel.style.display = 'block';
+            let total = 0;
+            let html = '';
+            currentOrder.forEach((item, idx) => {
+                const lineTotal = item.price * item.quantity;
+                total += lineTotal;
+                html += `
+                    <div class="row">
+                        <span>${esc(item.name)} × ${item.quantity}</span>
+                        <span>$${lineTotal.toFixed(2)} 
+                            <button class="btn danger" style="padding:1px 6px;font-size:11px;" onclick="removeFromOrder(${item.id})">×</button>
+                        </span>
+                    </div>`;
+            });
+            html += `<div class="row total-row"><span>Total</span><span>$${total.toFixed(2)}</span></div>`;
+            summary.innerHTML = html;
+            // Store current notes for all items
+            noteInput.onchange = function() {
+                currentOrder.forEach(item => item.notes = this.value);
+            };
+        }
+
+        function loadTablesForOrder() {
+            fetch('/api/tables').then(r => r.json()).then(tables => {
+                const sel = document.getElementById('orderTable');
+                sel.innerHTML = '<option value="">No table</option>' +
+                    tables.filter(t => t.status === 'available').map(t =>
+                        `<option value="${t.id}">Table ${t.table_number} (${t.capacity} seats)</option>`).join('');
+            });
+        }
+
+        function placeOrder() {
+            const customer = document.getElementById('orderCustomer').value.trim();
+            if (!customer) { showAlert('orderAlert', 'Customer name required', 'error'); return; }
+            if (currentOrder.length === 0) { showAlert('orderAlert', 'Add at least one item', 'error'); return; }
+            const tableId = document.getElementById('orderTable').value;
+            const notes = document.getElementById('orderNotes').value.trim();
+            fetch('/api/orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    customer_name: customer,
+                    table_id: tableId ? parseInt(tableId) : null,
+                    items: currentOrder.map(item => ({
+                        id: item.id,
+                        quantity: item.quantity,
+                        notes: item.notes || notes
+                    }))
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.error) { showAlert('orderAlert', data.error, 'error'); return; }
+                showAlert('orderAlert', 'Order #' + data.id + ' placed! Total: $' + data.total.toFixed(2), 'success');
+                currentOrder = [];
+                updateOrderSummary();
+                document.getElementById('orderCustomer').value = '';
+                document.getElementById('orderTable').value = '';
+                document.getElementById('orderNotes').value = '';
+                loadOrders();
+                loadTables(); // refresh table statuses
+            });
+        }
+
+        function clearOrder() {
+            currentOrder = [];
+            updateOrderSummary();
+            document.getElementById('orderCustomer').value = '';
+            document.getElementById('orderTable').value = '';
+            document.getElementById('orderNotes').value = '';
+            document.getElementById('orderAlert').innerHTML = '';
+        }
+
+        // ── Orders ──
+        function loadOrders() {
+            const status = document.getElementById('orderFilter').value;
+            let url = '/api/orders';
+            if (status) url += '?status=' + status;
+            fetch(url).then(r => r.json()).then(orders => {
+                document.getElementById('orderCount').textContent = orders.length + ' orders';
+                if (orders.length === 0) {
+                    document.getElementById('ordersList').innerHTML = '<div class="empty">No orders found.</div>';
+                    return;
+                }
+                document.getElementById('ordersList').innerHTML = orders.map(o => {
+                    const statusColors = { pending:'#f39c12', preparing:'#3498db', ready:'#2ecc71', served:'#9b59b6', completed:'#95a5a6', cancelled:'#e74c3c' };
+                    const sc = statusColors[o.status] || '#999';
+                    const itemsHtml = o.items ? o.items.map(i =>
+                        `<div>${esc(i.item_name || 'Item ' + i.menu_item_id)} × ${i.quantity} — $${(i.unit_price * i.quantity).toFixed(2)}${i.special_notes ? ' (' + esc(i.special_notes) + ')' : ''}</div>`
+                    ).join('') : '';
+                    return `
+                        <div class="order-item">
+                            <div class="header">
+                                <div class="info">
+                                    <strong>Order #${o.id}</strong> — ${esc(o.customer_name)}
+                                    <span style="font-size:12px;color:#999;margin-left:8px;">${o.table_id ? 'Table ' + o.table_id : 'Takeaway'} · ${new Date(o.created_at).toLocaleString()}</span>
+                                </div>
+                                <div class="total">$${o.total.toFixed(2)}</div>
+                            </div>
+                            <div class="items-list">${itemsHtml || '<em style="color:#999;">No items</em>'}</div>
+                            <div class="actions">
+                                <span style="display:inline-block;padding:2px 10px;border-radius:10px;background:${sc};color:white;font-size:11px;font-weight:600;">${o.status}</span>
+                                ${o.status !== 'completed' && o.status !== 'cancelled' ? `
+                                    <button class="btn" style="padding:4px 10px;font-size:12px;" onclick="updateOrderStatus(${o.id},'preparing')" ${o.status==='preparing'?'disabled':''}>Preparing</button>
+                                    <button class="btn success" style="padding:4px 10px;font-size:12px;" onclick="updateOrderStatus(${o.id},'ready')" ${o.status==='ready'?'disabled':''}>Ready</button>
+                                    <button class="btn secondary" style="padding:4px 10px;font-size:12px;" onclick="updateOrderStatus(${o.id},'served')" ${o.status==='served'?'disabled':''}>Served</button>
+                                    <button class="btn" style="padding:4px 10px;font-size:12px;" onclick="updateOrderStatus(${o.id},'completed')" ${o.status==='completed'?'disabled':''}>Complete</button>
+                                ` : ''}
+                                ${o.status !== 'cancelled' && o.status !== 'completed' ? `<button class="btn danger" style="padding:4px 10px;font-size:12px;" onclick="cancelOrder(${o.id})">Cancel</button>` : ''}
+                            </div>
+                        </div>`;
+                }).join('');
+            });
+        }
+
+        function updateOrderStatus(orderId, newStatus) {
+            fetch('/api/orders/' + orderId, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus })
+            }).then(r => r.json()).then(() => loadOrders());
+        }
+
+        function cancelOrder(orderId) {
+            if (!confirm('Cancel order #' + orderId + '?')) return;
+            fetch('/api/orders/' + orderId, { method: 'DELETE' })
+            .then(r => r.json()).then(() => loadOrders());
+        }
+
+        // ── Tables ──
+        function loadTables() {
+            const status = document.getElementById('tableFilter').value;
+            let url = '/api/tables';
+            if (status) url += '?status=' + status;
+            fetch(url).then(r => r.json()).then(tables => {
+                document.getElementById('tableCount').textContent = tables.length + ' tables';
+                if (tables.length === 0) {
+                    document.getElementById('tablesGrid').innerHTML = '<div class="empty">No tables.</div>';
+                    return;
+                }
+                const statusClass = { available:'status-available', occupied:'status-occupied', reserved:'status-reserved', maintenance:'status-maintenance' };
+                document.getElementById('tablesGrid').innerHTML = tables.map(t => `
+                    <div class="table-card">
+                        <div class="number">#${t.table_number}</div>
+                        <div class="capacity">${t.capacity} seats</div>
+                        <span class="status ${statusClass[t.status] || ''}">${t.status}</span>
+                        <div style="margin-top:8px;display:flex;gap:4px;justify-content:center;">
+                            <button class="btn" style="padding:3px 8px;font-size:11px;" onclick="setTableStatus(${t.id},'available')" ${t.status==='available'?'disabled':''}>Available</button>
+                            <button class="btn" style="padding:3px 8px;font-size:11px;" onclick="setTableStatus(${t.id},'occupied')" ${t.status==='occupied'?'disabled':''}>Occupied</button>
+                            <button class="btn warning" style="padding:3px 8px;font-size:11px;" onclick="setTableStatus(${t.id},'reserved')" ${t.status==='reserved'?'disabled':''}>Reserved</button>
+                            <button class="btn secondary" style="padding:3px 8px;font-size:11px;" onclick="setTableStatus(${t.id},'maintenance')" ${t.status==='maintenance'?'disabled':''}>Maint.</button>
+                        </div>
+                    </div>
+                `).join('');
+            });
+        }
+
+        function setTableStatus(tableId, newStatus) {
+            fetch('/api/tables/' + tableId, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus })
+            }).then(r => r.json()).then(() => loadTables());
+        }
+
+        // ── Reservations ──
+        function loadReservations() {
+            let url = '/api/reservations';
+            const params = [];
+            const date = document.getElementById('resDate').value;
+            const filter = document.getElementById('resFilter').value;
+            if (date) params.push('date=' + date);
+            if (filter) params.push('status=' + filter);
+            if (params.length) url += '?' + params.join('&');
+            fetch(url).then(r => r.json()).then(reservations => {
+                document.getElementById('resCount').textContent = reservations.length + ' reservations';
+                if (reservations.length === 0) {
+                    document.getElementById('reservationsList').innerHTML = '<div class="empty">No reservations found.</div>';
+                    return;
+                }
+                const statusClass = { confirmed:'status-available', seated:'status-reserved', completed:'status-available', cancelled:'status-maintenance', 'no-show':'status-occupied' };
+                document.getElementById('reservationsList').innerHTML = reservations.map(r => `
+                    <div class="res-item">
+                        <div class="info">
+                            <strong>${esc(r.customer_name)}</strong>
+                            <span class="time">${r.reservation_time}</span>
+                            <span style="color:#999;font-size:12px;">${r.table_number ? 'Table ' + r.table_number + ' (' + r.party_size + ' people)' : 'No table assigned'}</span>
+                            <span style="font-size:12px;color:#999;">${new Date(r.reservation_date).toLocaleDateString()}</span>
+                            ${r.notes ? '<span style="font-size:12px;color:#666;">📝 ' + esc(r.notes) + '</span>' : ''}
+                        </div>
+                        <span class="status ${statusClass[r.status] || ''}">${r.status}</span>
+                        <div style="display:flex;gap:4px;">
+                            ${r.status === 'confirmed' ? `<button class="btn success" style="padding:3px 8px;font-size:11px;" onclick="updateResStatus(${r.id},'seated')">Seat</button>` : ''}
+                            ${r.status === 'seated' ? `<button class="btn" style="padding:3px 8px;font-size:11px;" onclick="updateResStatus(${r.id},'completed')">Done</button>` : ''}
+                            ${r.status === 'confirmed' ? `<button class="btn danger" style="padding:3px 8px;font-size:11px;" onclick="updateResStatus(${r.id},'cancelled')">Cancel</button>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            });
+            // Populate table dropdown for new reservation
+            fetch('/api/tables/available').then(r => r.json()).then(tables => {
+                const sel = document.getElementById('resTableSelect');
+                sel.innerHTML = '<option value="">Auto-assign</option>' +
+                    tables.map(t => `<option value="${t.id}">Table ${t.table_number} (${t.capacity} seats)</option>`).join('');
+            });
+            // Set default date to today
+            if (!document.getElementById('resDateNew').value) {
+                document.getElementById('resDateNew').value = new Date().toISOString().split('T')[0];
+            }
+        }
+
+        function makeReservation() {
+            const name = document.getElementById('resName').value.trim();
+            const date = document.getElementById('resDateNew').value;
+            const time = document.getElementById('resTime').value;
+            const party = parseInt(document.getElementById('resParty').value) || 2;
+            if (!name || !date || !time) { showAlert('resAlert', 'Name, date, and time are required', 'error'); return; }
+            const payload = {
+                customer_name: name,
+                customer_phone: document.getElementById('resPhone').value.trim(),
+                customer_email: document.getElementById('resEmail').value.trim(),
+                party_size: party,
+                reservation_date: date,
+                reservation_time: time,
+                table_id: document.getElementById('resTableSelect').value ? parseInt(document.getElementById('resTableSelect').value) : null,
+                notes: document.getElementById('resNotes').value.trim()
+            };
+            fetch('/api/reservations', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            }).then(r => r.json()).then(data => {
+                if (data.error) { showAlert('resAlert', data.error, 'error'); return; }
+                showAlert('resAlert', 'Reservation #' + data.id + ' confirmed for ' + data.table_number + '!', 'success');
+                document.getElementById('resName').value = '';
+                document.getElementById('resPhone').value = '';
+                document.getElementById('resEmail').value = '';
+                document.getElementById('resDateNew').value = '';
+                document.getElementById('resTime').value = '';
+                document.getElementById('resParty').value = '2';
+                document.getElementById('resNotes').value = '';
+                loadReservations();
+            });
+        }
+
+        function updateResStatus(resId, newStatus) {
+            fetch('/api/reservations/' + resId, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus })
+            }).then(r => r.json()).then(() => loadReservations());
+        }
+
+        // ── Inventory ──
+        let showingLowOnly = false;
+
+        function loadInventory(lowOnly) {
+            showingLowOnly = lowOnly || false;
+            const url = showingLowOnly ? '/api/inventory/low-stock' : '/api/inventory';
+            fetch(url).then(r => r.json()).then(data => {
+                const items = showingLowOnly ? (data.alerts || []) : data;
+                if (items.length === 0) {
+                    document.getElementById('inventoryBody').innerHTML = '<tr><td colspan="6" style="text-align:center;color:#999;padding:20px;">No items found.</td></tr>';
+                    return;
+                }
+                document.getElementById('inventoryBody').innerHTML = items.map(item => {
+                    const isLow = item.quantity <= item.low_stock_alert;
+                    return `
+                        <tr>
+                            <td><strong>${esc(item.item_name)}</strong></td>
+                            <td>${item.quantity} ${esc(item.unit)}</td>
+                            <td>${esc(item.unit)}</td>
+                            <td>${item.low_stock_alert}</td>
+                            <td class="${isLow ? 'low' : 'ok'}">${isLow ? '⚠ LOW' : '✓ OK'}</td>
+                            <td class="actions">
+                                <input type="number" id="adj_${item.id}" placeholder="Δ" style="width:50px;" />
+                                <button class="btn" style="padding:2px 8px;font-size:11px;" onclick="adjustStock(${item.id})">Adjust</button>
+                                <button class="btn secondary" style="padding:2px 8px;font-size:11px;" onclick="setStock(${item.id})">Set</button>
+                            </td>
+                        </tr>`;
+                }).join('');
+                document.getElementById('lowStockBtn').style.background = showingLowOnly ? '#e94560' : '';
+                document.getElementById('lowStockBtn').style.color = showingLowOnly ? 'white' : '';
+            });
+        }
+
+        function showLowStockOnly() { loadInventory(true); }
+        function showInventoryAll() { loadInventory(false); }
+
+        function adjustStock(itemId) {
+            const delta = parseInt(document.getElementById('adj_' + itemId).value);
+            if (isNaN(delta)) return;
+            fetch('/api/inventory/' + itemId, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ delta: delta })
+            }).then(r => r.json()).then(() => loadInventory(showingLowOnly));
+        }
+
+        function setStock(itemId) {
+            const val = parseInt(prompt('Set quantity for this item:'));
+            if (val === null || isNaN(val)) return;
+            fetch('/api/inventory/' + itemId, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ quantity: val })
+            }).then(r => r.json()).then(() => loadInventory(showingLowOnly));
+        }
+
+        // ── Dashboard ──
+        function loadDashboard() {
+            Promise.all([
+                fetch('/api/reports/summary').then(r => r.json()),
+                fetch('/api/reports/daily-sales').then(r => r.json())
+            ]).then(([summary, sales]) => {
+                document.getElementById('statGrid').innerHTML = `
+                    <div class="stat-box"><div class="number">$${summary.total_revenue.toFixed(2)}</div><div class="label">Daily Revenue</div></div>
+                    <div class="stat-box"><div class="number">${summary.orders_today}</div><div class="label">Orders Today</div></div>
+                    <div class="stat-box ${summary.pending_orders > 0 ? 'warn' : 'good'}"><div class="number">${summary.pending_orders}</div><div class="label">Pending Orders</div></div>
+                    <div class="stat-box ${summary.low_stock_items > 0 ? 'warn' : 'good'}"><div class="number">${summary.low_stock_items}</div><div class="label">Low Stock Items</div></div>
+                    <div class="stat-box"><div class="number">${summary.upcoming_reservations}</div><div class="label">Upcoming Reservations</div></div>
+                `;
+            });
+        }
+
+        // Auto-load menu on page load
+        loadMenu();
+    </script>
+</body>
+</html>

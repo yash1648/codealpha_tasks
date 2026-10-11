@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Event Registration System</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background: #f5f7fa;
+        color: #333;
+        min-height: 100vh;
+      }
+      nav {
+        background: #1a1a2e;
+        color: white;
+        padding: 16px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      nav h2 {
+        font-size: 18px;
+      }
+      nav .tabs button {
+        background: none;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: #ccc;
+        padding: 6px 14px;
+        margin-left: 6px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+      }
+      nav .tabs button.active {
+        background: #4361ee;
+        color: white;
+        border-color: #4361ee;
+      }
+      .container {
+        max-width: 960px;
+        margin: 24px auto;
+        padding: 0 16px;
+      }
+      .card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 1px 8px rgba(0, 0, 0, 0.08);
+        padding: 24px;
+        margin-bottom: 20px;
+      }
+      h3 {
+        font-size: 16px;
+        margin-bottom: 12px;
+        color: #1a1a2e;
+      }
+      .form-row {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 8px;
+        flex-wrap: wrap;
+      }
+      .form-row label {
+        font-size: 13px;
+        color: #666;
+        min-width: 80px;
+      }
+      .form-row input,
+      .form-row textarea,
+      .form-row select {
+        flex: 1;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 13px;
+      }
+      textarea {
+        resize: vertical;
+        min-height: 60px;
+      }
+      button.btn {
+        padding: 8px 18px;
+        background: #4361ee;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      button.btn:hover {
+        background: #3a56d4;
+      }
+      button.btn.danger {
+        background: #e63946;
+      }
+      button.btn.danger:hover {
+        background: #c1121f;
+      }
+      button.btn.secondary {
+        background: #6c757d;
+      }
+      button.btn.secondary:hover {
+        background: #5a6268;
+      }
+      button.btn:disabled {
+        background: #aaa;
+        cursor: not-allowed;
+      }
+      .event-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 16px;
+      }
+      .event-card {
+        border: 1px solid #e8e8e8;
+        border-radius: 10px;
+        padding: 20px;
+        background: white;
+        transition: box-shadow 0.2s;
+      }
+      .event-card:hover {
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      }
+      .event-card .date {
+        font-size: 12px;
+        color: #4361ee;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+      .event-card h4 {
+        font-size: 16px;
+        margin-bottom: 4px;
+      }
+      .event-card .loc {
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 8px;
+      }
+      .event-card .spots {
+        font-size: 12px;
+        color: #999;
+      }
+      .event-card .spots.full {
+        color: #e63946;
+      }
+      .event-detail {
+        border-left: 3px solid #4361ee;
+        padding-left: 16px;
+        margin-bottom: 16px;
+      }
+      .event-detail h3 {
+        margin-bottom: 4px;
+      }
+      .event-detail .meta {
+        font-size: 13px;
+        color: #666;
+      }
+      .reg-list {
+        margin-top: 12px;
+      }
+      .reg-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 13px;
+      }
+      .reg-item .remove {
+        color: #e63946;
+        cursor: pointer;
+        background: none;
+        border: none;
+        font-size: 13px;
+      }
+      .empty {
+        text-align: center;
+        padding: 40px;
+        color: #999;
+        font-size: 14px;
+      }
+      .alert {
+        padding: 10px 14px;
+        border-radius: 6px;
+        margin-bottom: 10px;
+        font-size: 13px;
+      }
+      .alert.error {
+        background: #fde8e8;
+        color: #c1121f;
+      }
+      .alert.success {
+        background: #d4edda;
+        color: #155724;
+      }
+      .alert.info {
+        background: #d1ecf1;
+        color: #0c5460;
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <h2>📅 Event Registration</h2>
+      <div class="tabs">
+        <button class="active" onclick="showSection('events', this)">
+          All Events
+        </button>
+        <button onclick="showSection('create', this)">Create Event</button>
+      </div>
+    </nav>
+    <div class="container">
+      <!-- Events List -->
+      <div id="section-events">
+        <div class="card">
+          <h3
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+            "
+          >
+            Upcoming Events
+            <span
+              id="eventCount"
+              style="font-size: 13px; color: #999; font-weight: normal"
+            ></span>
+          </h3>
+          <div id="eventsGrid" class="event-grid"></div>
+        </div>
+      </div>
+      <!-- Create Event -->
+      <div id="section-create" style="display: none">
+        <div class="card">
+          <h3>Create New Event</h3>
+          <div class="form-row">
+            <label>Title</label><input id="evTitle" placeholder="Event title" />
+          </div>
+          <div class="form-row">
+            <label>Date</label><input id="evDate" type="datetime-local" />
+          </div>
+          <div class="form-row">
+            <label>Location</label
+            ><input id="evLocation" placeholder="Venue or online" />
+          </div>
+          <div class="form-row">
+            <label>Max Attendees</label
+            ><input
+              id="evMax"
+              type="number"
+              min="1"
+              placeholder="0 = unlimited"
+            />
+          </div>
+          <div class="form-row">
+            <label>Description</label
+            ><textarea id="evDesc" placeholder="Event details..."></textarea>
+          </div>
+          <div id="createAlert"></div>
+          <button class="btn" onclick="createEvent()">Create Event</button>
+          <button
+            class="btn secondary"
+            onclick="
+              showSection('events', document.querySelector('.tabs button'))
+            "
+            style="margin-left: 8px"
+          >
+            Back
+          </button>
+        </div>
+      </div>
+      <!-- Event Detail (modal-like section) -->
+      <div id="section-detail" style="display: none">
+        <div class="card">
+          <button
+            class="btn secondary"
+            onclick="
+              showSection('events', document.querySelector('.tabs button'))
+            "
+            style="margin-bottom: 12px"
+          >
+            ← Back to Events
+          </button>
+          <div id="detailContent"></div>
+        </div>
+      </div>
+    </div>
+    <script>
+      function showSection(name, btn) {
+        document
+          .querySelectorAll(".tabs button")
+          .forEach((b) => b.classList.remove("active"));
+        if (btn) btn.classList.add("active");
+        ["events", "create", "detail"].forEach(
+          (s) =>
+            (document.getElementById("section-" + s).style.display = "none"),
+        );
+        document.getElementById("section-" + name).style.display = "block";
+        if (name === "events") loadEvents();
+      }
+      function loadEvents() {
+        fetch("/api/events")
+          .then((r) => r.json())
+          .then((events) => {
+            document.getElementById("eventCount").textContent =
+              events.length + " event(s)";
+            if (events.length === 0) {
+              document.getElementById("eventsGrid").innerHTML =
+                '<div class="empty">No events yet. Create one!</div>';
+              return;
+            }
+            document.getElementById("eventsGrid").innerHTML = events
+              .map((e) => {
+                const date = new Date(e.event_date);
+                const dateStr =
+                  date.toLocaleDateString() +
+                  " " +
+                  date.toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  });
+                const spots = e.max_attendees
+                  ? e.max_attendees - e.registered_count
+                  : null;
+                const full = spots !== null && spots <= 0;
+                return `<div class="event-card">
+                        <div class="date">${dateStr}</div>
+                        <h4>${esc(e.title)}</h4>
+                        <div class="loc">${esc(e.location || "TBA")}</div>
+                        <div class="spots ${full ? "full" : ""}">${full ? "FULL" : spots !== null ? spots + " spots left" : ""}</div>
+                        <button class="btn" style="margin-top:8px;" onclick="viewEvent(${e.id})">View & Register</button>
+                    </div>`;
+              })
+              .join("");
+          });
+      }
+      let currentEventId = null;
+      function viewEvent(id) {
+        currentEventId = id;
+        fetch("/api/events/" + id)
+          .then((r) => r.json())
+          .then((e) => {
+            if (e.error) {
+              alert(e.error);
+              return;
+            }
+            const date = new Date(e.event_date);
+            const dateStr =
+              date.toLocaleDateString() +
+              " " +
+              date.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              });
+            const spots = e.max_attendees
+              ? e.max_attendees - e.registered_count
+              : null;
+            const full = spots !== null && spots <= 0;
+            const html = `
+                    <div class="event-detail">
+                        <h3>${esc(e.title)}</h3>
+                        <div class="meta">
+                            <strong>Date:</strong> ${dateStr}<br>
+                            <strong>Location:</strong> ${esc(e.location || "TBA")}<br>
+                            <strong>Spots:</strong> ${full ? "FULL" : spots !== null ? spots + " left / " + e.max_attendees + " max" : "Unlimited"}
+                        </div>
+                        ${e.description ? `<p style="margin-top:8px;color:#666;font-size:13px;">${esc(e.description)}</p>` : ""}
+                    </div>
+                    <h4 style="margin-top:16px;">Register for this event</h4>
+                    <div class="form-row"><label>Name</label><input id="regName" placeholder="Your name" /></div>
+                    <div class="form-row"><label>Email</label><input id="regEmail" type="email" placeholder="your@email.com" /></div>
+                    <div id="regAlert"></div>
+                    <button class="btn" onclick="register(${id})" ${full ? "disabled" : ""}>Register</button>
+                    <h4 style="margin-top:20px;">Registrations (${e.registrations.length})</h4>
+                    <div class="reg-list" id="regList">${
+                      e.registrations.length === 0
+                        ? '<div class="empty">No registrations yet</div>'
+                        : e.registrations
+                            .map(
+                              (r) => `
+                        <div class="reg-item">
+                            <span><strong>${esc(r.user_name)}</strong> — ${esc(r.user_email)} <span style="color:#999;font-size:12px;">(${new Date(r.registered_at).toLocaleString()})</span></span>
+                            ${isOrganizer() ? `<button class="remove" onclick="cancelReg(${r.id})">Remove</button>` : ""}
+                        </div>`,
+                            )
+                            .join("")
+                    }</div>
+                `;
+            document.getElementById("detailContent").innerHTML = html;
+            showSection("detail", null);
+          });
+      }
+      function register(eventId) {
+        const name = document.getElementById("regName").value.trim();
+        const email = document.getElementById("regEmail").value.trim();
+        const alertEl = document.getElementById("regAlert");
+        if (!name || !email) {
+          alertEl.innerHTML =
+            '<div class="alert error">Name and email required</div>';
+          return;
+        }
+        fetch("/api/events/" + eventId + "/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_name: name, user_email: email }),
+        })
+          .then((r) => r.json())
+          .then((data) => {
+            if (data.error) {
+              alertEl.innerHTML = `<div class="alert error">${data.error}</div>`;
+              return;
+            }
+            alertEl.innerHTML = `<div class="alert success">Registered successfully!</div>`;
+            document.getElementById("regName").value = "";
+            document.getElementById("regEmail").value = "";
+            setTimeout(() => viewEvent(eventId), 1000);
+          });
+      }
+      function cancelReg(regId) {
+        if (!confirm("Cancel this registration?")) return;
+        fetch("/api/registrations/" + regId, { method: "DELETE" })
+          .then((r) => r.json())
+          .then(() => {
+            if (currentEventId) {
+              viewEvent(currentEventId);
+            } else {
+              loadEvents();
+            }
+          });
+      }
+      function createEvent() {
+        const title = document.getElementById("evTitle").value.trim();
+        const date = document.getElementById("evDate").value;
+        const location = document.getElementById("evLocation").value.trim();
+        const max = parseInt(document.getElementById("evMax").value) || 0;
+        const desc = document.getElementById("evDesc").value.trim();
+        const alertEl = document.getElementById("createAlert");
+        if (!title || !date) {
+          alertEl.innerHTML =
+            '<div class="alert error">Title and date are required</div>';
+          return;
+        }
+        fetch("/api/events", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title,
+            event_date: date,
+            location,
+            max_attendees: max,
+            description: desc,
+          }),
+        })
+          .then((r) => r.json())
+          .then((data) => {
+            if (data.error) {
+              alertEl.innerHTML = `<div class="alert error">${data.error}</div>`;
+              return;
+            }
+            alertEl.innerHTML = `<div class="alert success">Event created! ID: ${data.id}</div>`;
+            document.getElementById("evTitle").value = "";
+            document.getElementById("evDate").value = "";
+            document.getElementById("evLocation").value = "";
+            document.getElementById("evMax").value = "";
+            document.getElementById("evDesc").value = "";
+            setTimeout(
+              () =>
+                showSection("events", document.querySelector(".tabs button")),
+              1500,
+            );
+          });
+      }
+      function esc(s) {
+        const d = document.createElement("div");
+        d.textContent = s || "";
+        return d.innerHTML;
+      }
+      function isOrganizer() {
+        return true;
+      } // simplified: all users can manage
+      loadEvents();
+    </script>
+  </body>
+</html>

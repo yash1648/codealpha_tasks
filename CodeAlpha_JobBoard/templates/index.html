@@ -1,0 +1,863 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Job Board Platform</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background: #f4f6f9;
+        color: #333;
+      }
+      header {
+        background: linear-gradient(135deg, #1a1a2e, #16213e);
+        color: white;
+        padding: 18px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+      header h1 {
+        font-size: 20px;
+      }
+      header nav {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      header nav button {
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #ddd;
+        padding: 6px 14px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+        transition: all 0.2s;
+      }
+      header nav button.active {
+        background: #4361ee;
+        border-color: #4361ee;
+        color: white;
+      }
+      header nav button:hover {
+        background: rgba(255, 255, 255, 0.25);
+      }
+      .container {
+        max-width: 1000px;
+        margin: 20px auto;
+        padding: 0 16px;
+      }
+      .card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 1px 6px rgba(0, 0, 0, 0.07);
+        padding: 24px;
+        margin-bottom: 16px;
+      }
+      .card h3 {
+        font-size: 15px;
+        margin-bottom: 12px;
+        color: #1a1a2e;
+      }
+      .form-row {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 8px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .form-row label {
+        font-size: 13px;
+        color: #666;
+        min-width: 90px;
+      }
+      .form-row input,
+      .form-row textarea,
+      .form-row select {
+        flex: 1;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 13px;
+      }
+      textarea {
+        resize: vertical;
+        min-height: 70px;
+      }
+      button.btn {
+        padding: 8px 20px;
+        background: #4361ee;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        transition: background 0.2s;
+      }
+      button.btn:hover {
+        background: #3a56d4;
+      }
+      button.btn.secondary {
+        background: #6c757d;
+      }
+      button.btn.secondary:hover {
+        background: #585f66;
+      }
+      button.btn.success {
+        background: #2ecc71;
+      }
+      button.btn.success:hover {
+        background: #27ae60;
+      }
+      button.btn.danger {
+        background: #e63946;
+      }
+      button.btn.danger:hover {
+        background: #c1121f;
+      }
+      button.btn:disabled {
+        background: #aaa;
+        cursor: not-allowed;
+      }
+      .job-card {
+        border: 1px solid #e8e8e8;
+        border-radius: 10px;
+        padding: 18px;
+        margin-bottom: 12px;
+        background: white;
+        transition: box-shadow 0.2s;
+      }
+      .job-card:hover {
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      }
+      .job-card .company {
+        font-size: 12px;
+        color: #4361ee;
+        font-weight: 600;
+        margin-bottom: 2px;
+      }
+      .job-card .title {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+      .job-card .meta {
+        font-size: 13px;
+        color: #666;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 6px;
+      }
+      .job-card .meta span {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .job-card .salary {
+        color: #2ecc71;
+        font-weight: 600;
+      }
+      .tabs {
+        display: flex;
+        gap: 16px;
+        border-bottom: 2px solid #e0e0e0;
+        padding-bottom: 8px;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+      }
+      .tab-btn {
+        background: none;
+        border: none;
+        padding: 6px 0;
+        font-size: 14px;
+        color: #999;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        padding-bottom: 4px;
+      }
+      .tab-btn.active {
+        color: #4361ee;
+        border-bottom-color: #4361ee;
+        font-weight: 600;
+      }
+      .alert {
+        padding: 10px 14px;
+        border-radius: 6px;
+        margin-bottom: 10px;
+        font-size: 13px;
+      }
+      .alert.error {
+        background: #fde8e8;
+        color: #c1121f;
+      }
+      .alert.success {
+        background: #d4edda;
+        color: #155724;
+      }
+      .empty {
+        text-align: center;
+        padding: 40px;
+        color: #999;
+      }
+      .badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 11px;
+        font-weight: 600;
+      }
+      .badge.applied {
+        background: #dbeafe;
+        color: #1d4ed8;
+      }
+      .badge.reviewed {
+        background: #fef3c7;
+        color: #b45309;
+      }
+      .badge.interview {
+        background: #d1fae5;
+        color: #047857;
+      }
+      .badge.offer {
+        background: #ede9fe;
+        color: #5b21b6;
+      }
+      .badge.accepted {
+        background: #2ecc71;
+        color: white;
+      }
+      .badge.rejected {
+        background: #fde8e8;
+        color: #c1121f;
+      }
+      .badge.withdrawn {
+        background: #e5e7eb;
+        color: #6b7280;
+      }
+      .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+      .stat-box {
+        background: white;
+        border-radius: 8px;
+        padding: 16px;
+        text-align: center;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+      }
+      .stat-box .number {
+        font-size: 28px;
+        font-weight: 700;
+        color: #4361ee;
+      }
+      .stat-box .label {
+        font-size: 12px;
+        color: #999;
+        margin-top: 2px;
+      }
+      .app-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 13px;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .app-row .actions {
+        display: flex;
+        gap: 6px;
+      }
+      .app-row select {
+        padding: 4px 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>💼 Job Board Platform</h1>
+      <nav>
+        <button class="active" onclick="switchTab('jobs', this)">
+          Job Search
+        </button>
+        <button onclick="switchTab('post', this)">Post a Job</button>
+        <button onclick="switchTab('candidates', this)">Candidates</button>
+        <button onclick="switchTab('applications', this)">Applications</button>
+        <button onclick="switchTab('dashboard', this)">Dashboard</button>
+      </nav>
+    </header>
+    <div class="container">
+      <!-- Job Search -->
+      <div id="tab-jobs">
+        <div class="card">
+          <h3>Search Jobs</h3>
+          <div class="form-row" style="margin-bottom: 12px">
+            <input
+              id="searchQ"
+              placeholder="Keywords (title, description, company)"
+              style="flex: 2"
+              oninput="debounceSearch()"
+            />
+            <select
+              id="searchType"
+              style="flex: 0 0 140px"
+              onchange="debounceSearch()"
+            >
+              <option value="">All Types</option>
+              <option value="Full-time">Full-time</option>
+              <option value="Part-time">Part-time</option>
+              <option value="Contract">Contract</option>
+              <option value="Internship">Internship</option>
+            </select>
+            <input
+              id="searchRemote"
+              type="checkbox"
+              onchange="debounceSearch()"
+              title="Remote only"
+            />
+            <label for="searchRemote" style="min-width: auto"
+              >Remote only</label
+            >
+            <input
+              id="searchLocation"
+              placeholder="Location"
+              style="flex: 1"
+              oninput="debounceSearch()"
+            />
+            <button class="btn" onclick="searchJobs()">Search</button>
+          </div>
+          <div id="jobsList"></div>
+        </div>
+      </div>
+      <!-- Post Job -->
+      <div id="tab-post" style="display: none">
+        <div class="card">
+          <h3>Post a New Job</h3>
+          <div id="postAlert"></div>
+          <div class="form-row">
+            <label>Company (ID)</label
+            ><input id="postEmpId" type="number" placeholder="Employer ID" />
+          </div>
+          <div class="form-row">
+            <label>Job Title</label
+            ><input id="postTitle" placeholder="Senior Python Developer" />
+          </div>
+          <div class="form-row">
+            <label>Location</label
+            ><input id="postLocation" placeholder="New York, NY / Remote" />
+          </div>
+          <div class="form-row">
+            <label>Job Type</label>
+            <select id="postType">
+              <option>Full-time</option>
+              <option>Part-time</option>
+              <option>Contract</option>
+              <option>Internship</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>Salary Min</label
+            ><input id="postSalMin" type="number" placeholder="80000" />
+          </div>
+          <div class="form-row">
+            <label>Salary Max</label
+            ><input id="postSalMax" type="number" placeholder="120000" />
+          </div>
+          <div class="form-row">
+            <label>Remote</label><input id="postRemote" type="checkbox" />
+          </div>
+          <div class="form-row">
+            <label>Description</label
+            ><textarea
+              id="postDesc"
+              placeholder="Full job description..."
+            ></textarea>
+          </div>
+          <div class="form-row">
+            <label>Requirements</label
+            ><textarea
+              id="postReqs"
+              placeholder="Required skills, experience..."
+            ></textarea>
+          </div>
+          <div style="margin-top: 8px">
+            <button class="btn" onclick="postJob()">Post Job</button>
+            <button class="btn secondary" onclick="loadEmployers()">
+              Load Employers
+            </button>
+          </div>
+          <div id="employersList" style="margin-top: 12px"></div>
+        </div>
+      </div>
+      <!-- Candidates -->
+      <div id="tab-candidates" style="display: none">
+        <div class="card">
+          <h3>Register / View Candidates</h3>
+          <div class="form-row">
+            <label>Full Name</label
+            ><input id="candName" placeholder="Jane Doe" />
+          </div>
+          <div class="form-row">
+            <label>Email</label
+            ><input
+              id="candEmail"
+              type="email"
+              placeholder="jane@example.com"
+            />
+          </div>
+          <div class="form-row">
+            <label>Phone</label
+            ><input id="candPhone" placeholder="+1 555-0000" />
+          </div>
+          <div class="form-row">
+            <label>Cover Letter</label
+            ><textarea
+              id="candCover"
+              placeholder="About yourself..."
+            ></textarea>
+          </div>
+          <div id="candAlert"></div>
+          <button class="btn" onclick="registerCandidate()">
+            Register Candidate
+          </button>
+          <button
+            class="btn secondary"
+            onclick="loadCandidates()"
+            style="margin-left: 8px"
+          >
+            Refresh List
+          </button>
+          <div id="candidatesList" style="margin-top: 12px"></div>
+        </div>
+      </div>
+      <!-- Applications -->
+      <div id="tab-applications" style="display: none">
+        <div class="card">
+          <h3>Manage Applications</h3>
+          <div class="form-row" style="margin-bottom: 12px">
+            <select
+              id="appFilterJob"
+              style="flex: 1"
+              onchange="loadApplications()"
+            >
+              <option value="">All Jobs</option>
+            </select>
+            <select
+              id="appFilterStatus"
+              style="flex: 0 0 140px"
+              onchange="loadApplications()"
+            >
+              <option value="">All Statuses</option>
+              <option value="applied">Applied</option>
+              <option value="reviewed">Reviewed</option>
+              <option value="interview">Interview</option>
+              <option value="offer">Offer</option>
+              <option value="accepted">Accepted</option>
+              <option value="rejected">Rejected</option>
+              <option value="withdrawn">Withdrawn</option>
+            </select>
+            <button class="btn secondary" onclick="loadApplications()">
+              Filter
+            </button>
+          </div>
+          <div id="applicationsList"></div>
+        </div>
+      </div>
+      <!-- Dashboard -->
+      <div id="tab-dashboard" style="display: none">
+        <div class="card">
+          <h3>Platform Dashboard</h3>
+          <div class="stat-grid" id="statGrid"></div>
+          <div id="topJobs"></div>
+        </div>
+      </div>
+    </div>
+    <script>
+      let searchTimer = null;
+      function switchTab(name, btn) {
+        document
+          .querySelectorAll("header nav button")
+          .forEach((b) => b.classList.remove("active"));
+        if (btn) btn.classList.add("active");
+        ["jobs", "post", "candidates", "applications", "dashboard"].forEach(
+          (t) => {
+            document.getElementById("tab-" + t).style.display = "none";
+          },
+        );
+        document.getElementById("tab-" + name).style.display = "block";
+        if (name === "jobs") searchJobs();
+        if (name === "applications") loadApplications();
+        if (name === "dashboard") loadDashboard();
+        if (name === "candidates") loadCandidates();
+      }
+      function debounceSearch() {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(searchJobs, 400);
+      }
+      function esc(s) {
+        const d = document.createElement("div");
+        d.textContent = s || "";
+        return d.innerHTML;
+      }
+      function showAlert(id, msg, type) {
+        document.getElementById(id).innerHTML =
+          `<div class="alert ${type}">${esc(msg)}</div>`;
+        setTimeout(() => {
+          const el = document.getElementById(id);
+          if (el.firstChild) el.innerHTML = "";
+        }, 4000);
+      }
+      function loadEmployers() {
+        fetch("/api/employers")
+          .then((r) => r.json())
+          .then((data) => {
+            document.getElementById("employersList").innerHTML =
+              data.length === 0
+                ? '<div class="empty">No employers registered</div>'
+                : '<h4 style="margin-bottom:8px;">Registered Employers:</h4>' +
+                  data
+                    .map(
+                      (e) =>
+                        `<div style="font-size:13px;padding:4px 0;border-bottom:1px solid #f0f0f0;"><strong>${esc(e.company_name)}</strong> — ID: ${e.id} — ${esc(e.contact_email)}</div>`,
+                    )
+                    .join("");
+          });
+      }
+      function searchJobs() {
+        const params = new URLSearchParams();
+        const q = document.getElementById("searchQ").value.trim();
+        const type = document.getElementById("searchType").value;
+        const remote = document.getElementById("searchRemote").checked;
+        const location = document.getElementById("searchLocation").value.trim();
+        if (q) params.set("q", q);
+        if (type) params.set("type", type);
+        if (remote) params.set("remote", "true");
+        if (location) params.set("location", location);
+        fetch("/api/jobs?" + params.toString())
+          .then((r) => r.json())
+          .then((jobs) => {
+            if (jobs.length === 0) {
+              document.getElementById("jobsList").innerHTML =
+                '<div class="empty">No jobs found matching your criteria.</div>';
+              return;
+            }
+            document.getElementById("jobsList").innerHTML = jobs
+              .map(
+                (j) => `
+                    <div class="job-card">
+                        <div class="company">${esc(j.company_name)} ${j.is_verified ? "✓" : ""}</div>
+                        <div class="title">${esc(j.title)}</div>
+                        <div class="meta">
+                            <span>📍 ${esc(j.location || "Remote")}</span>
+                            <span>📋 ${esc(j.job_type)}</span>
+                            ${j.salary_min ? `<span class="salary">💰 $${j.salary_min.toLocaleString()} - ${j.salary_max ? "$" + j.salary_max.toLocaleString() : "+"}</span>` : ""}
+                            ${j.is_remote ? "<span>🏠 Remote</span>" : ""}
+                        </div>
+                        <p style="margin-top:6px;font-size:13px;color:#666;">${esc(j.description.substring(0, 200))}${j.description.length > 200 ? "..." : ""}</p>
+                        <div style="margin-top:8px;display:flex;gap:8px;">
+                            <a href="#" onclick="viewJob(${j.id}); return false;" style="color:#4361ee;text-decoration:none;font-size:13px;">View Details →</a>
+                            <span style="font-size:12px;color:#999;">Posted ${new Date(j.created_at).toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                `,
+              )
+              .join("");
+          });
+      }
+      function viewJob(id) {
+        fetch("/api/jobs/" + id)
+          .then((r) => r.json())
+          .then((j) => {
+            if (j.error) {
+              alert(j.error);
+              return;
+            }
+            const applied = confirm(
+              "Viewing job: " +
+                j.title +
+                "\n\n" +
+                j.description +
+                "\n\nWant to apply? Click OK to apply (requires candidate registration first).",
+            );
+            if (applied) {
+              const candId = prompt("Enter your candidate ID:");
+              if (candId) {
+                fetch("/api/jobs/" + id + "/apply", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    candidate_id: parseInt(candId),
+                    cover_letter: "",
+                  }),
+                })
+                  .then((r) => r.json())
+                  .then((data) => {
+                    if (data.error) alert(data.error);
+                    else alert("Applied! Application ID: " + data.id);
+                    searchJobs();
+                  });
+              }
+            } else {
+              alert("Job: " + j.title + " at " + j.company_name);
+            }
+          });
+      }
+      function postJob() {
+        const empId = parseInt(document.getElementById("postEmpId").value);
+        const title = document.getElementById("postTitle").value.trim();
+        const desc = document.getElementById("postDesc").value.trim();
+        if (!empId || !title || !desc) {
+          showAlert(
+            "postAlert",
+            "Employer ID, title, and description required",
+            "error",
+          );
+          return;
+        }
+        const payload = {
+          employer_id: empId,
+          title,
+          description: desc,
+          location: document.getElementById("postLocation").value.trim(),
+          job_type: document.getElementById("postType").value,
+          salary_min:
+            parseFloat(document.getElementById("postSalMin").value) || null,
+          salary_max:
+            parseFloat(document.getElementById("postSalMax").value) || null,
+          is_remote: document.getElementById("postRemote").checked ? 1 : 0,
+          requirements: document.getElementById("postReqs").value.trim(),
+        };
+        fetch("/api/jobs", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        })
+          .then((r) => r.json())
+          .then((data) => {
+            if (data.error) {
+              showAlert("postAlert", data.error, "error");
+              return;
+            }
+            showAlert("postAlert", "Job posted! ID: " + data.id, "success");
+            [
+              "postEmpId",
+              "postTitle",
+              "postLocation",
+              "postDesc",
+              "postReqs",
+              "postSalMin",
+              "postSalMax",
+            ].forEach((id) => (document.getElementById(id).value = ""));
+            document.getElementById("postRemote").checked = false;
+            setTimeout(
+              () =>
+                switchTab("jobs", document.querySelector("header nav button")),
+              2000,
+            );
+          });
+      }
+      function registerCandidate() {
+        const name = document.getElementById("candName").value.trim();
+        const email = document.getElementById("candEmail").value.trim();
+        if (!name || !email) {
+          showAlert("candAlert", "Name and email required", "error");
+          return;
+        }
+        fetch("/api/candidates/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            full_name: name,
+            email,
+            phone: document.getElementById("candPhone").value.trim(),
+            cover_letter: document.getElementById("candCover").value.trim(),
+          }),
+        })
+          .then((r) => r.json())
+          .then((data) => {
+            if (data.error) {
+              showAlert("candAlert", data.error, "error");
+              return;
+            }
+            showAlert(
+              "candAlert",
+              "Candidate registered! ID: " + data.id,
+              "success",
+            );
+            document.getElementById("candName").value = "";
+            document.getElementById("candEmail").value = "";
+            document.getElementById("candPhone").value = "";
+            document.getElementById("candCover").value = "";
+            loadCandidates();
+          });
+      }
+      function uploadCandidateResume(candId, input) {
+        if (!input.files || !input.files[0]) return;
+        const formData = new FormData();
+        formData.append("file", input.files[0]);
+        fetch("/api/candidates/" + candId + "/resume", {
+          method: "POST",
+          body: formData,
+        })
+          .then((r) => r.json())
+          .then((d) => {
+            if (d.error) alert(d.error);
+            else {
+              alert("Resume uploaded successfully!");
+              loadCandidates();
+            }
+          });
+      }
+      function loadCandidates() {
+        fetch("/api/candidates")
+          .then((r) => r.json())
+          .then((data) => {
+            if (data.length === 0) {
+              document.getElementById("candidatesList").innerHTML =
+                '<div class="empty">No candidates registered yet.</div>';
+              return;
+            }
+            document.getElementById("candidatesList").innerHTML =
+              '<h4 style="margin-bottom:8px;">Registered Candidates:</h4>' +
+              data
+                .map(
+                  (c) => `
+                        <div style="font-size:13px;padding:8px 0;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
+                            <div>
+                                <strong>${esc(c.full_name)}</strong> — ${esc(c.email)} — ID: <code>${c.id}</code>
+                                ${c.resume_path ? `<a href="/uploads/${encodeURIComponent(c.resume_path)}" target="_blank" style="margin-left:8px;font-size:12px;color:#2ecc71;">[Resume Uploaded]</a>` : '<span style="margin-left:8px;font-size:12px;color:#999;">(No resume)</span>'}
+                            </div>
+                            <div>
+                                <input type="file" id="file_${c.id}" style="display:none;" onchange="uploadCandidateResume(${c.id}, this)" />
+                                <button class="btn secondary" style="padding:2px 8px;font-size:11px;" onclick="document.getElementById('file_${c.id}').click()">Upload Resume</button>
+                            </div>
+                        </div>`,
+                )
+                .join("");
+          });
+      }
+      function loadApplications() {
+        const jobId = document.getElementById("appFilterJob").value;
+        const status = document.getElementById("appFilterStatus").value;
+        let params = new URLSearchParams();
+        if (jobId) params.set("job_id", jobId);
+        if (status) params.set("status", status);
+        fetch("/api/applications?" + params.toString())
+          .then((r) => r.json())
+          .then((data) => {
+            if (data.length === 0) {
+              document.getElementById("applicationsList").innerHTML =
+                '<div class="empty">No applications found.</div>';
+              return;
+            }
+            document.getElementById("applicationsList").innerHTML = data
+              .map(
+                (a) => `
+                    <div class="app-row">
+                        <div>
+                            <strong>${esc(a.candidate_name)}</strong> — ${esc(a.job_title)} at ${esc(a.company_name)}
+                            <span class="badge ${a.status}" style="margin-left:6px;">${a.status}</span>
+                            <span style="color:#999;font-size:12px;"> (${new Date(a.applied_at).toLocaleDateString()})</span>
+                            ${a.resume_path ? `<a href="/uploads/${encodeURIComponent(a.resume_path)}" target="_blank" style="margin-left:8px;font-size:12px;color:#4361ee;">[View Resume]</a>` : ""}
+                        </div>
+                        <div class="actions">
+                            <select onchange="updateStatus(${a.id}, this.value)">
+                                <option value="">Change status...</option>
+                                <option value="applied" ${a.status === "applied" ? "selected" : ""}>Applied</option>
+                                <option value="reviewed" ${a.status === "reviewed" ? "selected" : ""}>Reviewed</option>
+                                <option value="interview" ${a.status === "interview" ? "selected" : ""}>Interview</option>
+                                <option value="offer" ${a.status === "offer" ? "selected" : ""}>Offer</option>
+                                <option value="accepted" ${a.status === "accepted" ? "selected" : ""}>Accepted</option>
+                                <option value="rejected" ${a.status === "rejected" ? "selected" : ""}>Rejected</option>
+                            </select>
+                            <button class="btn danger" style="padding:4px 10px;font-size:12px;" onclick="withdrawApp(${a.id})" ${a.status === "accepted" ? "disabled" : ""}>Withdraw</button>
+                        </div>
+                    </div>
+                `,
+              )
+              .join("");
+          });
+        // Populate job dropdown
+        fetch("/api/jobs")
+          .then((r) => r.json())
+          .then((jobs) => {
+            const sel = document.getElementById("appFilterJob");
+            const current = sel.value;
+            sel.innerHTML =
+              '<option value="">All Jobs</option>' +
+              jobs
+                .map(
+                  (j) =>
+                    `<option value="${j.id}" ${j.id == current ? "selected" : ""}>${esc(j.title)} @ ${esc(j.company_name)}</option>`,
+                )
+                .join("");
+          });
+      }
+      function updateStatus(appId, newStatus) {
+        if (!newStatus) return;
+        fetch("/api/applications/" + appId + "/status", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: newStatus, changed_by: "admin" }),
+        })
+          .then((r) => r.json())
+          .then(() => loadApplications());
+      }
+      function withdrawApp(appId) {
+        if (!confirm("Withdraw this application?")) return;
+        fetch("/api/applications/" + appId, { method: "DELETE" })
+          .then((r) => r.json())
+          .then(() => loadApplications());
+      }
+      function loadDashboard() {
+        fetch("/api/reports/dashboard")
+          .then((r) => r.json())
+          .then((d) => {
+            document.getElementById("statGrid").innerHTML = `
+                    <div class="stat-box"><div class="number">${d.total_jobs}</div><div class="label">Active Jobs</div></div>
+                    <div class="stat-box"><div class="number">${d.total_applications}</div><div class="label">Total Applications</div></div>
+                    <div class="stat-box"><div class="number">${d.new_applications_today}</div><div class="label">New Today</div></div>
+                    <div class="stat-box"><div class="number">${d.active_candidates}</div><div class="label">Candidates</div></div>
+                    <div class="stat-box"><div class="number">${d.employers_count}</div><div class="label">Employers</div></div>
+                `;
+            document.getElementById("topJobs").innerHTML =
+              '<h4 style="margin-top:12px;">Top Jobs by Applications:</h4>' +
+              (d.top_jobs.length === 0
+                ? '<div class="empty">No applications yet</div>'
+                : d.top_jobs
+                    .map(
+                      (j) =>
+                        `<div style="font-size:13px;padding:4px 0;"><strong>${esc(j.title)}</strong> at ${esc(j.company_name)} — ${j.app_count} applications</div>`,
+                    )
+                    .join(""));
+            const statusHtml = Object.entries(d.applications_by_status || {})
+              .map(([s, c]) => `<span class="badge ${s}">${s}: ${c}</span>`)
+              .join(" ");
+            if (statusHtml) {
+              document.getElementById("statGrid").innerHTML +=
+                `<div class="stat-box" style="grid-column:1/-1;text-align:left;">${statusHtml}</div>`;
+            }
+          });
+      }
+      searchJobs();
+      loadEmployers();
+    </script>
+  </body>
+</html>
